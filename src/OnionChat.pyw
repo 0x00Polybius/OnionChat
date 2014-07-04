@@ -1,12 +1,11 @@
 import Tkinter, socks, datetime, time, socket, ConfigParser, ast, base64, pygame
 from Crypto.Cipher import AES
 from thread import start_new_thread
-
+import stem.process
 
 config = ConfigParser.RawConfigParser()
 config.read('OnionChat.ini')
 onions = []
-
 
 with open("contacts.ini") as fp:
     onions = [ast.literal_eval(line) for line in fp if line.strip()]
@@ -25,6 +24,9 @@ EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 cipher = AES.new(secret)
 
+tor_process = stem.process.launch_tor(
+    tor_cmd='.\\Tor\\tor.exe', torrc_path='.\\Tor\\torrc.txt',
+     take_ownership = True ) #completion_percent = 0,
 
 def onion_send(onion, str, curd):
     try:
@@ -52,8 +54,6 @@ def text_send(onion,str):
         s.close();
     except (RuntimeError, TypeError, NameError):
         pass
-
-
 
 def onion_status(env):
     onlinestr = '...loading online status...'
@@ -94,11 +94,8 @@ def onion_rev():
         app.T.yview(Tkinter.END)
 
 def offline():
-    msg = "[" + my_chatname + " is offline]\n"
-    for onion in onions:
-        text_send(onion,msg)
+    tor_process.kill()
     app.destroy()
-
 
 def play_sound():
     if app.sound_on:
@@ -107,7 +104,6 @@ def play_sound():
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():
             continue
-
 
 class simpleapp_tk(Tkinter.Tk):
 
@@ -174,7 +170,6 @@ class simpleapp_tk(Tkinter.Tk):
         self.entryVariable.set(u"")
         self.entry.focus_set()
         self.entry.selection_range(0, Tkinter.END)
-
 
 if __name__ == "__main__":
     app = simpleapp_tk(None)

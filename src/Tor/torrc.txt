@@ -1,0 +1,12 @@
+SocksPort 11108
+
+HiddenServiceDir hidden_service
+HiddenServicePort 1337 127.0.0.1:1337
+
+DataDirectory tor_data
+
+AvoidDiskWrites 1
+LongLivedPorts 1337
+FetchDirInfoEarly 1
+CircuitBuildTimeout 30
+NumEntryGuards 6
