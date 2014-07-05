@@ -3,6 +3,8 @@ from Crypto.Cipher import AES
 from idlelib.WidgetRedirector import WidgetRedirector
 from thread import start_new_thread
 from threading import Thread
+from sys import platform as _platform
+import os
 
 config = ConfigParser.RawConfigParser()
 config.read('OnionChat.ini')
@@ -24,12 +26,18 @@ pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
 EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
 DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
 cipher = AES.new(secret)
-onlinestr = '...loading online status...'
+
 
 def start_tor():
-    tor_process = stem.process.launch_tor(
-        tor_cmd='.\\Tor\\tor.exe', torrc_path='.\\Tor\\torrc.txt',
-        take_ownership = True )
+    if _platform == "win32":
+        tor_process = stem.process.launch_tor(
+            tor_cmd='.\\Tor\\tor.exe', torrc_path='.\\Tor\\torrc.txt',
+            take_ownership = True )
+    if _platform == "linux" or _platform == "linux2":
+     tor_process = stem.process.launch_tor(
+        #torrc_path= os.path.dirname(os.path.abspath(__file__))+'/torrc.txt', #tor_cmd='/etc/init.d/tor start' ,
+        take_ownership = True, timeout = 10 )
+
 
 start_new_thread(start_tor, ());
 
@@ -46,7 +54,6 @@ def onion_send(onion, str, curd):
     except (RuntimeError, TypeError, NameError):
         pass
 
-
 def text_send(onion,str):
     try:
         s = socks.socksocket();
@@ -60,22 +67,30 @@ def text_send(onion,str):
     except (RuntimeError, TypeError, NameError):
         pass
 
+onlineList = []
+
 def check_staus(onion):
-    global onlinestr
+    global onlineList
     try:
         s = socks.socksocket();
         s.setproxy(socks.PROXY_TYPE_SOCKS5, tor_ip, tor_port);
         s.settimeout(5)
         s.connect((onion[0], chat_port));
         s.close();
-        onlinestr += onion[1] + ' online \n'
+        onlineList.append(onion[1] + ' online \n')
     except:
         pass
 
+
 def onion_status(env):
-    global onlinestr
+    global onlineList
+    onlinestr = '...loading online status...'
     while True:
+        onlineList.sort()
+        for x in onlineList:
+            onlinestr += x
         app.labelVariable.set(onlinestr)
+        onlineList = []
         onlinestr = ''
         threads = []
         for onion in onions:
@@ -85,10 +100,6 @@ def onion_status(env):
         for t in threads:
             t.join()
 
-   # online_message = True
-   #                if online_message:
-   #                 s.send(EncodeAES(cipher, ("[" + my_chatname + " is online]\n").encode("utf-8")));
-   #                 online_message = not online_message
 
 def onion_rev():
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -197,3 +208,9 @@ if __name__ == "__main__":
     app = OnionChatGUI(None)
     app.title('Onion Chat')
     app.mainloop()
+
+
+    # online_message = True
+    #                if online_message:
+    #                 s.send(EncodeAES(cipher, ("[" + my_chatname + " is online]\n").encode("utf-8")));
+    #                 online_message = not online_message
