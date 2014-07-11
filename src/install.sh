@@ -10,8 +10,7 @@
 #
 # Installs all necessary packages
 
-sudo apt-get -y install tor
-sudo apt-get -y install python
-sudo apt-get -y install python2.7
-sudo apt-get -y install python-pygame
-sudo apt-get -y install idle-python2.7
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get -y install tor python python2.7 python-pygame idle-python2.7
+python OnionChat.pyw
