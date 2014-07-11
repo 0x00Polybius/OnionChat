@@ -11,6 +11,6 @@
 # Installs all necessary packages
 
 sudo apt-get update
-sudo apt-get upgrade
+sudo apt-get -y upgrade
 sudo apt-get -y install tor python python2.7 python-pygame idle-python2.7
 python OnionChat.pyw
