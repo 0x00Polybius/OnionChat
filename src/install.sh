@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 # Onion Chat by Gegenwind
 #   ____                               _           _ 
